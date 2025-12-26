@@ -22,6 +22,33 @@ class ConversationRepository {
     }
   }
 
+  Future<ConversationHive?> getConversationById(String conversationId) async {
+    try {
+      return _conversationsBox.values.firstWhere((c) => c.id == conversationId);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  Future<void> updateLastMessageTime(
+    String conversationId,
+    DateTime time,
+  ) async {
+    final conv = await getConversationById(conversationId);
+    if (conv != null) {
+      final index = _conversationsBox.values.toList().indexOf(conv);
+      if (index >= 0) {
+        final updatedConv = ConversationHive(
+          id: conv.id,
+          userId: conv.userId,
+          unreadCount: conv.unreadCount,
+          lastMessageTime: time,
+        );
+        await _conversationsBox.putAt(index, updatedConv);
+      }
+    }
+  }
+
   Future<void> updateConversation(ConversationHive conversation) async {
     await conversation.save();
   }

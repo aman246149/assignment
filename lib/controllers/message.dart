@@ -2,15 +2,17 @@ import 'dart:developer';
 
 import 'package:assignment/db_model/message.dart';
 import 'package:assignment/model/message.dart';
+import 'package:assignment/repository/conversation.dart';
 import 'package:assignment/repository/message.dart';
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 
 class MessageController extends ChangeNotifier {
   final MessageRepository _messageRepository;
+  final ConversationRepository _conversationRepository;
   final Uuid _uuid = const Uuid();
 
-  MessageController(this._messageRepository);
+  MessageController(this._messageRepository, this._conversationRepository);
 
   final List<Message> messages = [];
   bool isLoading = false;
@@ -30,14 +32,20 @@ class MessageController extends ChangeNotifier {
 
   Future<void> sendMessage(String conversationId, String text) async {
     try {
+      final now = DateTime.now();
       final messageHive = MessageHive(
         id: _uuid.v4(),
         conversationId: conversationId,
         text: text,
         isMe: true,
+        timestamp: now,
       );
       await _messageRepository.addMessage(messageHive);
       messages.add(Message.fromHive(messageHive));
+
+      // Update conversation lastMessageTime
+      await _conversationRepository.updateLastMessageTime(conversationId, now);
+
       notifyListeners();
 
       // Fetch response from API
@@ -52,10 +60,22 @@ class MessageController extends ChangeNotifier {
       isLoading = true;
       notifyListeners();
 
-      final messageHive = await _messageRepository.fetchRandomMessageFromApi(
+      final messagesHive = await _messageRepository.fetchRandomMessagesFromApi(
         conversationId,
       );
-      messages.add(Message.fromHive(messageHive));
+      DateTime? lastTime;
+      for (final messageHive in messagesHive) {
+        messages.add(Message.fromHive(messageHive));
+        lastTime = messageHive.timestamp;
+      }
+
+      // Update conversation lastMessageTime with the last received message
+      if (lastTime != null) {
+        await _conversationRepository.updateLastMessageTime(
+          conversationId,
+          lastTime,
+        );
+      }
 
       isLoading = false;
       notifyListeners();

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:assignment/db_model/message.dart';
 import 'package:hive/hive.dart';
@@ -23,21 +24,36 @@ class MessageRepository {
     return Future.value(messages);
   }
 
-  Future<MessageHive> fetchRandomMessageFromApi(String conversationId) async {
+  Future<List<MessageHive>> fetchRandomMessagesFromApi(
+    String conversationId,
+  ) async {
     final response = await http.get(
-      Uri.parse('https://api.quotable.io/random'),
+      Uri.parse(
+        'https://dummyjson.com/comments?limit=${Random().nextInt(4) + 1}',
+      ),
     );
 
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
-      final message = MessageHive(
-        id: _uuid.v4(),
-        conversationId: conversationId,
-        text: data['content'] as String,
-        isMe: false,
-      );
-      await addMessage(message);
-      return message;
+      final comments = data['comments'] as List;
+      final List<MessageHive> messages = [];
+
+      for (final comment in comments) {
+        final message = MessageHive(
+          id: _uuid.v4(),
+          conversationId: conversationId,
+          text: comment['body'] as String,
+          isMe: false,
+        );
+        await addMessage(message);
+        messages.add(message);
+      }
+
+      if (messages.isEmpty) {
+        throw Exception('No comments found');
+      }
+
+      return messages;
     } else {
       throw Exception('Failed to fetch message from API');
     }
