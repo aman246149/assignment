@@ -43,6 +43,7 @@ class _UsersTabState extends State<UsersTab>
         }
 
         return ListView.separated(
+          key: const PageStorageKey<String>('users_tab_list'),
           padding: const EdgeInsets.symmetric(vertical: 8),
           itemCount: users.length,
           separatorBuilder: (context, index) =>

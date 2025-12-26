@@ -128,10 +128,11 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildBody() {
-    switch (_bottomNavIndex) {
-      case 0:
+    return IndexedStack(
+      index: _bottomNavIndex,
+      children: [
         // Home - show the main chat UI
-        return NestedScrollView(
+        NestedScrollView(
           headerSliverBuilder: (context, innerBoxIsScrolled) {
             return [
               SliverAppBar(
@@ -156,10 +157,9 @@ class _HomeScreenState extends State<HomeScreen> {
               ChatHistoryTab(onConversationTap: _navigateToChatFromHistory),
             ],
           ),
-        );
-      case 1:
+        ),
         // Offers
-        return const Center(
+        const Center(
           child: Text(
             'Offers',
             style: TextStyle(
@@ -168,10 +168,9 @@ class _HomeScreenState extends State<HomeScreen> {
               color: Colors.grey,
             ),
           ),
-        );
-      case 2:
+        ),
         // Settings
-        return const Center(
+        const Center(
           child: Text(
             'Settings',
             style: TextStyle(
@@ -180,10 +179,9 @@ class _HomeScreenState extends State<HomeScreen> {
               color: Colors.grey,
             ),
           ),
-        );
-      default:
-        return const SizedBox.shrink();
-    }
+        ),
+      ],
+    );
   }
 
   @override
