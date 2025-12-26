@@ -4,6 +4,7 @@ import 'package:assignment/controllers/conversation.dart';
 import 'package:assignment/controllers/user.dart';
 import 'package:assignment/model/conversation.dart';
 import 'package:assignment/model/user.dart';
+import 'package:assignment/services/connectivity_service.dart';
 import 'package:assignment/ui/screens/chat_screen.dart';
 import 'package:assignment/ui/screens/tabs/chat_history_tab.dart';
 import 'package:assignment/ui/screens/tabs/users_tab.dart';
@@ -22,6 +23,7 @@ class _HomeScreenState extends State<HomeScreen> {
   int _selectedTabIndex = 0;
   int _bottomNavIndex = 0;
   final PageController _pageController = PageController();
+  final ConnectivityService _connectivityService = ConnectivityService();
 
   final List<String> _tabNames = ['Users', 'Chat History'];
   final List<String> _mockNames = [
@@ -40,6 +42,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      _connectivityService.initialize(context);
       _loadData();
     });
   }
@@ -53,6 +56,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   void dispose() {
+    _connectivityService.dispose();
     _pageController.dispose();
     super.dispose();
   }

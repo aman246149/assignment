@@ -4,7 +4,12 @@ import 'package:assignment/ui/theme/app_theme.dart';
 class TopSnackbar {
   static OverlayEntry? _currentEntry;
 
-  static void show(BuildContext context, String message) {
+  static void show(
+    BuildContext context,
+    String message, {
+    Color? backgroundColor,
+    Duration duration = const Duration(seconds: 1),
+  }) {
     // Remove existing snackbar if any
     _currentEntry?.remove();
     _currentEntry = null;
@@ -14,6 +19,8 @@ class TopSnackbar {
     _currentEntry = OverlayEntry(
       builder: (context) => _TopSnackbarWidget(
         message: message,
+        backgroundColor: backgroundColor ?? AppColors.primary,
+        duration: duration,
         onDismiss: () {
           _currentEntry?.remove();
           _currentEntry = null;
@@ -27,9 +34,16 @@ class TopSnackbar {
 
 class _TopSnackbarWidget extends StatefulWidget {
   final String message;
+  final Color backgroundColor;
+  final Duration duration;
   final VoidCallback onDismiss;
 
-  const _TopSnackbarWidget({required this.message, required this.onDismiss});
+  const _TopSnackbarWidget({
+    required this.message,
+    required this.backgroundColor,
+    required this.duration,
+    required this.onDismiss,
+  });
 
   @override
   State<_TopSnackbarWidget> createState() => _TopSnackbarWidgetState();
@@ -58,8 +72,8 @@ class _TopSnackbarWidgetState extends State<_TopSnackbarWidget>
 
     _controller.forward();
 
-    // Auto dismiss after 1 second
-    Future.delayed(const Duration(seconds: 1), () {
+    // Auto dismiss after duration
+    Future.delayed(widget.duration, () {
       if (mounted) {
         _dismiss();
       }
@@ -93,7 +107,7 @@ class _TopSnackbarWidgetState extends State<_TopSnackbarWidget>
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
-                color: AppColors.primary,
+                color: widget.backgroundColor,
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
